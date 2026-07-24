@@ -1,0 +1,93 @@
+name: Test install.ps1
+
+on:
+  push:
+    paths:
+      - install.ps1
+      - .github/workflows/test-install.yml
+  pull_request:
+    paths:
+      - install.ps1
+      - .github/workflows/test-install.yml
+  workflow_dispatch:      # allow manual runs from the Actions tab
+
+jobs:
+  test:
+    name: Test on Windows
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate script syntax
+        run: |
+          $tokens = $null
+          $errors = $null
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+              'install.ps1', [ref] $tokens, [ref] $errors
+          )
+
+          if ($errors.Count -gt 0) {
+              Write-Error "Syntax errors found in install.ps1:"
+              $errors | ForEach-Object { Write-Error $_ }
+              exit 1
+          }
+
+          Write-Host '✅ No syntax errors detected'
+
+      - name: Test Chocolatey detection (pre-install)
+        run: |
+          # Simulate what Test-Chocolatey does and verify choco is absent at this point
+          # (GitHub Windows runners do NOT have Chocolatey pre-installed)
+          try {
+              $null = Get-Command choco -ErrorAction Stop
+              Write-Warning '⚠️  choco is already on PATH — detection test may be inaccurate'
+          }
+          catch {
+              Write-Host '✅ choco not found (as expected before script runs)'
+          }
+
+      - name: Run install.ps1
+        run: .\install.ps1
+
+      - name: Verify Chocolatey was installed
+        run: |
+          try {
+              $chocoVersion = choco --version
+              Write-Host "✅ Chocolatey v$chocoVersion is present"
+          }
+          catch {
+              Write-Error '❌ Chocolatey was not installed'
+              exit 1
+          }
+
+      - name: Verify packages were installed
+        run: |
+          $installed = choco list --local-only --limit-output
+          Write-Host 'Installed Chocolatey packages:'
+          Write-Host $installed
+
+          $expected = @('zed', 'glazewm', 'flow-launcher')
+          $missing  = @()
+
+          foreach ($pkg in $expected) {
+              if ($installed -match "(?m)^$pkg\|") {
+                  Write-Host "✅ $pkg is installed"
+              }
+              else {
+                  Write-Host "❌ $pkg is MISSING"
+                  $missing += $pkg
+              }
+          }
+
+          if ($missing.Count -gt 0) {
+              Write-Error "Missing packages: $($missing -join ', ')"
+              exit 1
+          }
+
+          Write-Host '✅ All expected packages are installed'
