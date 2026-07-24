@@ -95,7 +95,7 @@ else {
 $packages = @(
     @{ Name = 'zed'           ; Description = 'Zed text editor'               },
     @{ Name = 'glazewm'       ; Description = 'GlazeWM tiling window manager' },
-    @{ Name = 'ghostty'       ; Description = 'Ghostty terminal emulator'     },
+    @{ Name = 'alacritty'     ; Description = 'Alacritty terminal emulator'    },
     @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    }
 )
 

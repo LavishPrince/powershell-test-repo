@@ -37,7 +37,7 @@ workspaces:
   - name: "B"   # Browser
   - name: "E"   # Explorer (File Manager)
   - name: "M"   # Music
-  - name: "T"   # Terminal (Ghostty)
+  - name: "T"   # Terminal (Alacritty)
   - name: "A"   # AI (Perplexity / LLM tools)
 
 # ─── Window Rules (auto-assign apps to workspaces) ────────────────────────
@@ -46,35 +46,20 @@ workspaces:
 window_rules:
   # ── Terminal → Workspace T ──
   - command: "move to workspace T"
-    match_process_name: "Ghostty"
+    match_process_name: "Alacritty"
   - command: "move to workspace T"
     match_process_name: "WindowsTerminal"
   - command: "move to workspace T"
     match_process_name: "wt"
 
-  # ── AI / Perplexity → Workspace A ──
-  - command: "move to workspace A"
-    match_process_name: "Perplexity"
 
   # ── Browsers → Workspace B ──
-  - command: "move to workspace B"
-    match_process_name: "Safari"
   - command: "move to workspace B"
     match_process_name: "chrome"
   - command: "move to workspace B"
     match_process_name: "msedge"
-  - command: "move to workspace B"
-    match_process_name: "zen"
-  - command: "move to workspace B"
-    match_process_name: "firefox"
 
   # ── Music → Workspace M ──
-  - command: "move to workspace M"
-    match_process_name: "Spotify"
-  - command: "move to workspace M"
-    match_process_name: "Music"        # iTunes / Apple Music (if installed via Windows Store)
-  - command: "move to workspace M"
-    match_process_name: "AppleMusic"
 
   # ── File Explorer → Workspace E ──
   - command: "move to workspace E"
@@ -200,7 +185,7 @@ keybindings:
   # Launch Applications
   # Aerospace: alt-enter → Ghostty, alt-s → Safari
   # ═══════════════════════════════════════════════════════════════════════
-  - command: "exec ghostty"
+  - command: "exec alacritty"
     bindings: ["Alt+Enter"]
   - command: "exec start zen"                    # Zen Browser (cross-platform); change to `msedge` or `chrome` if preferred
     bindings: ["Alt+S"]
