@@ -25,9 +25,9 @@ $ErrorActionPreference = 'Stop'
 # ──────────────────────────────────────────────────
 
 function Test-Admin {
-    [bool](([Security.Principal.WindowsPrincipal]
+    [Security.Principal.WindowsPrincipal]::new(
         [Security.Principal.WindowsIdentity]::GetCurrent()
-    ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+    ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 function Test-Chocolatey {
