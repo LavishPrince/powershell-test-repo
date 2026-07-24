@@ -1,0 +1,251 @@
+# =============================================================================
+# GlazeWM Configuration
+# Translated from Aerospace (macOS) config
+# =============================================================================
+#
+# Modifier mapping: Aerospace `alt` (Option on macOS) → `Alt` on Windows
+#
+# NOTE: GlazeWM does not support binding modes like Aerospace's "service" mode.
+#       All service-mode commands have been mapped to direct Alt+Shift+<key>
+#       bindings instead. See the "Service Mode" section below.
+# =============================================================================
+
+general:
+  # Show floating windows always on top of tiling windows
+  show_floating_on_top: true
+  # Automatically focus the window under the cursor when moving focus between monitors
+  cursor_follows_focus: true
+  # Don't focus windows just by hovering over them
+  focus_follows_cursor: false
+
+# ─── Gaps (matches Aerospace: all zero) ───────────────────────────────────
+gaps:
+  inner_gap: 0
+  outer_gap: 0
+
+# ─── Workspaces ───────────────────────────────────────────────────────────
+workspaces:
+  - name: "1"
+  - name: "2"
+  - name: "3"
+  - name: "4"
+  - name: "5"
+  - name: "6"
+  - name: "7"
+  - name: "8"
+  - name: "9"
+  - name: "B"   # Browser
+  - name: "E"   # Explorer (File Manager)
+  - name: "M"   # Music
+  - name: "T"   # Terminal (Ghostty)
+  - name: "A"   # AI (Perplexity / LLM tools)
+
+# ─── Window Rules (auto-assign apps to workspaces) ────────────────────────
+# Mirrors the [on-window-detected] rules from your Aerospace config.
+# Windows equivalents are used where macOS apps don't exist.
+window_rules:
+  # ── Terminal → Workspace T ──
+  - command: "move to workspace T"
+    match_process_name: "Ghostty"
+  - command: "move to workspace T"
+    match_process_name: "WindowsTerminal"
+  - command: "move to workspace T"
+    match_process_name: "wt"
+
+  # ── AI / Perplexity → Workspace A ──
+  - command: "move to workspace A"
+    match_process_name: "Perplexity"
+
+  # ── Browsers → Workspace B ──
+  - command: "move to workspace B"
+    match_process_name: "Safari"
+  - command: "move to workspace B"
+    match_process_name: "chrome"
+  - command: "move to workspace B"
+    match_process_name: "msedge"
+  - command: "move to workspace B"
+    match_process_name: "zen"
+  - command: "move to workspace B"
+    match_process_name: "firefox"
+
+  # ── Music → Workspace M ──
+  - command: "move to workspace M"
+    match_process_name: "Spotify"
+  - command: "move to workspace M"
+    match_process_name: "Music"        # iTunes / Apple Music (if installed via Windows Store)
+  - command: "move to workspace M"
+    match_process_name: "AppleMusic"
+
+  # ── File Explorer → Workspace E ──
+  - command: "move to workspace E"
+    match_process_name: "explorer"
+
+# ─── Keybindings ──────────────────────────────────────────────────────────
+keybindings:
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Focus Movement (Vim-style: H/J/K/L)
+  # Aerospace: alt-h/j/k/l → focus left/down/up/right
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "focus left"
+    bindings: ["Alt+H"]
+  - command: "focus down"
+    bindings: ["Alt+J"]
+  - command: "focus up"
+    bindings: ["Alt+K"]
+  - command: "focus right"
+    bindings: ["Alt+L"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Window Movement
+  # Aerospace: alt-shift-h/j/k/l → move left/down/up/right
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "move left"
+    bindings: ["Alt+Shift+H"]
+  - command: "move down"
+    bindings: ["Alt+Shift+J"]
+  - command: "move up"
+    bindings: ["Alt+Shift+K"]
+  - command: "move right"
+    bindings: ["Alt+Shift+L"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Resize
+  # Aerospace: alt-shift-minus/equal → resize smart -50/+50
+  # GlazeWM equivalent uses percentage-based resize
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "resize width -5%"
+    bindings: ["Alt+Shift+OemMinus"]
+  - command: "resize width +5%"
+    bindings: ["Alt+Shift+OemPlus"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Layout
+  # Aerospace: alt-slash → layout tiles horizontal vertical
+  #            alt-comma → layout accordion horizontal vertical
+  # GlazeWM cycles through horizontal/vertical tiling; no accordion mode.
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "cycle layout"
+    bindings: ["Alt+OemQuestion"]       # / (slash) key
+  - command: "set layout vertical"
+    bindings: ["Alt+Oemcomma"]          # , (comma) key
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Workspaces — Switch
+  # Aerospace: alt-1..9 / alt-B/E/M/T/A
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "set workspace 1"
+    bindings: ["Alt+D1"]
+  - command: "set workspace 2"
+    bindings: ["Alt+D2"]
+  - command: "set workspace 3"
+    bindings: ["Alt+D3"]
+  - command: "set workspace 4"
+    bindings: ["Alt+D4"]
+  - command: "set workspace 5"
+    bindings: ["Alt+D5"]
+  - command: "set workspace 6"
+    bindings: ["Alt+D6"]
+  - command: "set workspace 7"
+    bindings: ["Alt+D7"]
+  - command: "set workspace 8"
+    bindings: ["Alt+D8"]
+  - command: "set workspace 9"
+    bindings: ["Alt+D9"]
+  - command: "set workspace B"
+    bindings: ["Alt+B"]
+  - command: "set workspace E"
+    bindings: ["Alt+E"]
+  - command: "set workspace M"
+    bindings: ["Alt+M"]
+  - command: "set workspace T"
+    bindings: ["Alt+T"]
+  - command: "set workspace A"
+    bindings: ["Alt+A"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Workspaces — Move Window
+  # Aerospace: alt-shift-1..9 / alt-shift-B/E/M/T/A
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "move to workspace 1"
+    bindings: ["Alt+Shift+D1"]
+  - command: "move to workspace 2"
+    bindings: ["Alt+Shift+D2"]
+  - command: "move to workspace 3"
+    bindings: ["Alt+Shift+D3"]
+  - command: "move to workspace 4"
+    bindings: ["Alt+Shift+D4"]
+  - command: "move to workspace 5"
+    bindings: ["Alt+Shift+D5"]
+  - command: "move to workspace 6"
+    bindings: ["Alt+Shift+D6"]
+  - command: "move to workspace 7"
+    bindings: ["Alt+Shift+D7"]
+  - command: "move to workspace 8"
+    bindings: ["Alt+Shift+D8"]
+  - command: "move to workspace 9"
+    bindings: ["Alt+Shift+D9"]
+  - command: "move to workspace B"
+    bindings: ["Alt+Shift+B"]
+  - command: "move to workspace E"
+    bindings: ["Alt+Shift+E"]
+  - command: "move to workspace M"
+    bindings: ["Alt+Shift+M"]
+  - command: "move to workspace T"
+    bindings: ["Alt+Shift+T"]
+  - command: "move to workspace A"
+    bindings: ["Alt+Shift+A"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Launch Applications
+  # Aerospace: alt-enter → Ghostty, alt-s → Safari
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "exec ghostty"
+    bindings: ["Alt+Enter"]
+  - command: "exec start zen"                    # Zen Browser (cross-platform); change to `msedge` or `chrome` if preferred
+    bindings: ["Alt+S"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Workspace Back-and-Forth / Monitor Move
+  # Aerospace: alt-tab → workspace-back-and-forth
+  #            alt-shift-tab → move-workspace-to-monitor --wrap-around next
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "toggle workspace"
+    bindings: ["Alt+Tab"]
+  - command: "move workspace to monitor next"
+    bindings: ["Alt+Shift+Tab"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # "Service Mode" translations
+  # GlazeWM does not have binding modes, so each command is mapped to a
+  # direct Alt+Shift+<key> binding.
+  #
+  # Original Aerospace service mode (entered via alt-shift-semicolon):
+  #   esc        → reload config
+  #   r          → flatten workspace tree (reset layout)
+  #   f          → toggle floating / tiling
+  #   backspace  → close all windows but current
+  #   alt-shift-h/j/k/l → join-with left/down/up/right
+  #   down/up    → volume down/up
+  #   shift-down → volume set 0 (mute)
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "reload config"
+    bindings: ["Alt+Shift+Escape"]
+  - command: "flatten workspace"
+    bindings: ["Alt+Shift+R"]
+  - command: "toggle floating"
+    bindings: ["Alt+Shift+F"]
+  - command: "close all but current"
+    bindings: ["Alt+Shift+Back"]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Volume Controls
+  # Mapped directly (no mode needed). Media keys typically work without
+  # GlazeWM, but these provide fallback keyboard shortcuts.
+  # ═══════════════════════════════════════════════════════════════════════
+  - command: "volume down"
+    bindings: ["Alt+Down"]
+  - command: "volume up"
+    bindings: ["Alt+Up"]
+  - command: "volume mute"
+    bindings: ["Alt+Shift+Down"]

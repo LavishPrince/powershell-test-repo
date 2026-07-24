@@ -1,12 +1,16 @@
 <#
     .SYNOPSIS
-    Installs Chocolatey (if missing) and essential Windows tools.
+    Installs Chocolatey (if missing), essential Windows tools, and deploys
+    the GlazeWM config.
 
     .DESCRIPTION
     This script ensures Chocolatey is present, then installs:
       - Zed (text editor)
       - GlazeWM (tiling window manager)
       - Flow Launcher (app launcher)
+
+    After installation, it copies the bundled GlazeWM config.yaml to
+    ~/.glaze-wm/config.yaml (backing up any existing config first).
 
     .EXAMPLE
     .\install.ps1
@@ -106,6 +110,36 @@ foreach ($pkg in $packages) {
     catch {
         Write-Error "❌ Failed to install $description ($name): $_"
     }
+}
+
+# ──────────────────────────────────────────────────
+# Deploy GlazeWM config
+# ──────────────────────────────────────────────────
+
+$glazeWmDir  = Join-Path $env:USERPROFILE '.glaze-wm'
+$configSrc   = Join-Path $PSScriptRoot 'glazewm' 'config.yaml'
+$configDest  = Join-Path $glazeWmDir 'config.yaml'
+
+if (Test-Path $configSrc) {
+    Write-Host '⚙️  Deploying GlazeWM config ...' -ForegroundColor Yellow
+
+    if (-not (Test-Path $glazeWmDir)) {
+        New-Item -ItemType Directory -Path $glazeWmDir -Force | Out-Null
+        Write-Host "   Created $glazeWmDir"
+    }
+
+    # Backup existing config if present
+    if (Test-Path $configDest) {
+        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $configDest $backupPath
+        Write-Host "   Backed up existing config to $backupPath"
+    }
+
+    Copy-Item $configSrc $configDest -Force
+    Write-Host '✅ GlazeWM config deployed' -ForegroundColor Green
+}
+else {
+    Write-Warning 'glazewm/config.yaml not found next to this script — skipping config deploy'
 }
 
 Write-Host "`n🎉 All done!" -ForegroundColor Green
