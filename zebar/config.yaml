@@ -1,0 +1,190 @@
+# =============================================================================
+# Zebar Configuration — macOS-style menu bar for Windows
+# Integrated with GlazeWM for workspace and window info.
+# =============================================================================
+#
+# Zebar is the status bar from the glzr.io ecosystem (same author as GlazeWM).
+# It provides a highly customizable bar that can display workspace indicators,
+# system stats, and more — similar to SketchyBar on macOS or Polybar on Linux.
+#
+# Configuration reference: https://github.com/glzr-io/zebar
+# =============================================================================
+
+# ─── Global Settings ───────────────────────────────────────────────────────
+
+position: top               # Top of the screen (menubar position)
+height: 32                   # Bar height in pixels
+monitor: primary            # Show on the primary monitor
+reserve_space: true         # Reserve screen space so windows don't overlap
+opacity: 1.0
+
+# ─── Providers ─────────────────────────────────────────────────────────────
+# Providers supply data to the bar components (widgets).
+# The GlazeWM provider reads workspace state, window info, etc. directly from
+# the running GlazeWM instance via IPC.
+
+providers:
+  # Core: GlazeWM integration — workspaces, window titles, binding modes
+  glazewm:
+    type: glazewm
+
+  # System stats
+  cpu:
+    type: cpu
+    refresh_interval: 2000     # ms
+
+  memory:
+    type: memory
+    refresh_interval: 5000
+
+  battery:
+    type: battery
+    refresh_interval: 10000
+
+  network:
+    type: network
+    refresh_interval: 3000
+
+  date:
+    type: date
+    refresh_interval: 1000
+    format: "%a %b %d  %H:%M"   # e.g. "Fri Jul 25  14:30"
+
+  # Media (optional — shows currently playing track)
+  media:
+    type: media
+    refresh_interval: 1000
+
+# ─── Styles ────────────────────────────────────────────────────────────────
+# Reusable style definitions referenced by layout components.
+
+styles:
+  workspace-default:
+    background: "#2a2a2a"
+    foreground: "#a0a0a0"
+    padding: "0 8"
+    border_radius: 4
+
+  workspace-active:
+    background: "#5a5a5a"
+    foreground: "#ffffff"
+    padding: "0 10"
+    border_radius: 4
+
+  workspace-occupied:
+    background: "#3a3a3a"
+    foreground: "#c0c0c0"
+    padding: "0 8"
+    border_radius: 4
+
+  label-dim:
+    foreground: "#888888"
+    padding: "0 4"
+
+  label-bright:
+    foreground: "#d0d0d0"
+    padding: "0 4"
+
+  separator:
+    foreground: "#444444"
+    padding: "0 4"
+
+  focused-window:
+    foreground: "#ffffff"
+    font_weight: bold
+    padding: "0 8"
+
+  critical:
+    foreground: "#e06c75"
+    padding: "0 4"
+
+# ─── Layout ────────────────────────────────────────────────────────────────
+# The visual structure of the bar, from left to right.
+# Each component can reference a provider and a style.
+
+layout:
+  # ── LEFT SECTION: Workspace Pills ──────────────────────────────────────
+  - type: group
+    padding: "0 6"
+    margin: "2 0"
+    children:
+      - type: glazewm-workspaces
+        provider: glazewm
+        style_default: workspace-default
+        style_active: workspace-active
+        style_occupied: workspace-occupied
+
+  # ── CENTER SECTION: Focused Window Title ───────────────────────────────
+  - type: group
+    flex: 1
+    justify: center
+    margin: "2 0"
+    children:
+      - type: glazewm-focused
+        provider: glazewm
+        style: focused-window
+        truncate: true
+        max_length: 120
+
+  # ── RIGHT SECTION: System Tray ─────────────────────────────────────────
+  - type: group
+    justify: end
+    padding: "0 8"
+    margin: "2 0"
+    children:
+      # Media / now playing
+      - type: text
+        provider: media
+        template: "{{ .Artist }} — {{ .Title }}"
+        style: label-dim
+        show_when: "{{ ne .Status \"Stopped\" }}"
+
+      - type: text
+        content: "│"
+        style: separator
+
+      # Network
+      - type: text
+        template: "{{ .SSID }}"
+        provider: network
+        style: label-dim
+
+      - type: text
+        content: "│"
+        style: separator
+
+      # CPU usage
+      - type: text
+        template: "󰻠 {{ .Usage | printf \"%.0f\" }}%"
+        provider: cpu
+        style: label-dim
+
+      - type: text
+        content: "│"
+        style: separator
+
+      # Memory
+      - type: text
+        template: " {{ .Used | printf \"%.1f\" }}G"
+        provider: memory
+        style: label-dim
+
+      - type: text
+        content: "│"
+        style: separator
+
+      # Battery (hidden when plugged in w/o battery)
+      - type: battery-level
+        provider: battery
+        style: label-dim
+        show_when: "{{ ne .Status \"Unknown\" }}"
+
+      - type: text
+        content: "│"
+        style: separator
+
+      # Clock
+      - type: text
+        provider: date
+        template: "{{ .Now | date \"Mon Jan 02  15:04\" }}"
+        style: label-bright

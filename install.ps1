@@ -7,13 +7,16 @@
     This script ensures Chocolatey is present, then installs:
       - Zed (text editor)
       - GlazeWM (tiling window manager)
+      - Zebar (status bar / menu bar — integrates with GlazeWM)
       - Alacritty (terminal emulator)
       - Flow Launcher (app launcher)
       - Zen Browser
 
     It also downloads and installs the JetBrains Mono Nerd Font for use with
-    Alacritty. After installation, it copies the bundled GlazeWM config.yaml
-    to ~/.glaze-wm/config.yaml (backing up any existing config first).
+    Alacritty. After installation, it copies the bundled config files:
+      - GlazeWM config to ~/.glaze-wm/config.yaml
+      - Zebar config to ~/.glzr/zebar/config.yaml
+    (existing configs are backed up first).
 
     .EXAMPLE
     .\install.ps1
@@ -98,6 +101,7 @@ else {
 $packages = @(
     @{ Name = 'zed'           ; Description = 'Zed text editor'               ; ExtraArgs = ''    },
     @{ Name = 'glazewm'       ; Description = 'GlazeWM tiling window manager' ; ExtraArgs = ''    },
+    @{ Name = 'zebar'         ; Description = 'Zebar status bar'              ; ExtraArgs = ''    },
     @{ Name = 'alacritty'     ; Description = 'Alacritty terminal emulator'    ; ExtraArgs = ''    },
     @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    ; ExtraArgs = ''    },
     @{ Name = 'zen-browser'   ; Description = 'Zen Browser'                   ; ExtraArgs = '--pre' }
@@ -207,6 +211,36 @@ if (Test-Path $configSrc) {
 }
 else {
     Write-Warning 'glazewm/config.yaml not found next to this script — skipping config deploy'
+}
+
+# ──────────────────────────────────────────────────
+# Deploy Zebar config
+# ──────────────────────────────────────────────────
+
+$zebarDir  = Join-Path $env:USERPROFILE '.glzr' 'zebar'
+$configSrc  = Join-Path $PSScriptRoot 'zebar' 'config.yaml'
+$configDest = Join-Path $zebarDir 'config.yaml'
+
+if (Test-Path $configSrc) {
+    Write-Host '⚙️  Deploying Zebar config ...' -ForegroundColor Yellow
+
+    if (-not (Test-Path $zebarDir)) {
+        New-Item -ItemType Directory -Path $zebarDir -Force | Out-Null
+        Write-Host "   Created $zebarDir"
+    }
+
+    # Backup existing config if present
+    if (Test-Path $configDest) {
+        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $configDest $backupPath
+        Write-Host "   Backed up existing config to $backupPath"
+    }
+
+    Copy-Item $configSrc $configDest -Force
+    Write-Host '✅ Zebar config deployed' -ForegroundColor Green
+}
+else {
+    Write-Warning 'zebar/config.yaml not found next to this script — skipping config deploy'
 }
 
 Write-Host "`n🎉 All done!" -ForegroundColor Green
