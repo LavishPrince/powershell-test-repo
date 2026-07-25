@@ -96,20 +96,21 @@ else {
 # ──────────────────────────────────────────────────
 
 $packages = @(
-    @{ Name = 'zed'           ; Description = 'Zed text editor'               },
-    @{ Name = 'glazewm'       ; Description = 'GlazeWM tiling window manager' },
-    @{ Name = 'alacritty'     ; Description = 'Alacritty terminal emulator'    },
-    @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    },
-    @{ Name = 'zen-browser'   ; Description = 'Zen Browser'                   }
+    @{ Name = 'zed'           ; Description = 'Zed text editor'               ; ExtraArgs = ''    },
+    @{ Name = 'glazewm'       ; Description = 'GlazeWM tiling window manager' ; ExtraArgs = ''    },
+    @{ Name = 'alacritty'     ; Description = 'Alacritty terminal emulator'    ; ExtraArgs = ''    },
+    @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    ; ExtraArgs = ''    },
+    @{ Name = 'zen-browser'   ; Description = 'Zen Browser'                   ; ExtraArgs = '--pre' }
 )
 
 foreach ($pkg in $packages) {
     $name        = $pkg.Name
     $description = $pkg.Description
+    $extraArgs   = $pkg.ExtraArgs
 
     Write-Host "📦 Installing $description ($name) ..." -ForegroundColor Yellow
     try {
-        choco install $name -y --limit-output
+        choco install $name -y --limit-output $extraArgs
         Write-Host "✅ Installed $description" -ForegroundColor Green
     }
     catch {
