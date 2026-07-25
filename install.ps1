@@ -74,27 +74,24 @@ if (-not (Test-Chocolatey)) {
         [System.Net.ServicePointManager]::SecurityProtocol =
             [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-        # Use Invoke-RestMethod rather than WebClient: it surfaces HTTP/TLS
-        # failures as a proper terminating error with a useful message,
-        # instead of leaving $installScript unassigned and producing a
-        # confusing "variable has not been set" error under strict mode.
-        $installScript = $null
-        try {
-            $installScript = Invoke-RestMethod -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing
+        # Wrap in a clean sub-block to isolate the web download from strict mode variable tracking
+        $scriptText = try {
+            (Invoke-RestMethod -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing)
         }
         catch {
-            throw "Could not download the Chocolatey install script: $_"
+            throw "Network failure while downloading the Chocolatey install script: $_"
         }
 
-        if ([string]::IsNullOrWhiteSpace($installScript)) {
-            throw 'Downloaded Chocolatey install script was empty'
+        if ([string]::IsNullOrWhiteSpace($scriptText)) {
+            throw 'Downloaded Chocolatey install script was empty or invalid.'
         }
 
-        Invoke-Expression $installScript
+        Invoke-Expression -Command $scriptText
 
-        # Refresh environment so choco is available in the current session
-        $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
-                     [System.Environment]::GetEnvironmentVariable('Path', 'User')
+        # Refresh environment so choco is available immediately in the current session
+        $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+        $userPath    = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+        $env:Path    = "$machinePath;$userPath"
 
         Write-Host '✅ Chocolatey installed successfully' -ForegroundColor Green
     }
