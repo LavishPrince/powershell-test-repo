@@ -15,7 +15,8 @@
 position: top               # Top of the screen (menubar position)
 height: 32                   # Bar height in pixels
 monitor: primary            # Show on the primary monitor
-reserve_space: true         # Reserve screen space so windows don't overlap
+reserve_space: false        # Don't reserve space — let windows use full screen
+auto_hide: true             # Hide the bar when not focused; reveal on hover
 opacity: 1.0
 
 # ─── Providers ─────────────────────────────────────────────────────────────
