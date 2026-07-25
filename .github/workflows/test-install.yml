@@ -72,7 +72,7 @@ jobs:
           Write-Host 'Installed Chocolatey packages:'
           Write-Host $installed
 
-          $expected = @('zed', 'glazewm', 'flow-launcher')
+          $expected = @('zed', 'glazewm', 'alacritty', 'flow-launcher', 'zen-browser')
           $missing  = @()
 
           foreach ($pkg in $expected) {

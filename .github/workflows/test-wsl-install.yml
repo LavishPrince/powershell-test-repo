@@ -1,0 +1,86 @@
+name: Test wsl-install.sh
+
+on:
+  push:
+    paths:
+      - wsl-install.sh
+      - home/**
+      - .github/workflows/test-wsl-install.yml
+  pull_request:
+    paths:
+      - wsl-install.sh
+      - home/**
+      - .github/workflows/test-wsl-install.yml
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint (shellcheck + syntax)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bash syntax check
+        run: bash -n wsl-install.sh
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+          scandir: '.'
+
+  test:
+    name: Test on Ubuntu (best-effort)
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create minimal .bashrc (so source doesn't fail)
+        run: touch "$HOME/.bashrc"
+
+      - name: Install Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          determinate: true
+
+      - name: Run wsl-install.sh
+        run: bash wsl-install.sh
+        # Docker's systemctl calls will fail in CI, but the script should
+        # at least get through apt + brew sections successfully.
+        continue-on-error: true
+
+      - name: Verify apt packages
+        run: |
+          packages=(
+            ansible build-essential curl file git
+            ruby ruby-dev nodejs npm apt-transport-https
+            ca-certificates gnupg lsb-release
+          )
+          missing=()
+          for pkg in "${packages[@]}"; do
+            if dpkg -s "$pkg" &>/dev/null; then
+              echo "✅ $pkg"
+            else
+              echo "❌ $pkg MISSING"
+              missing+=("$pkg")
+            fi
+          done
+          if ((${#missing[@]} > 0)); then
+            echo "Missing: ${missing[*]}"
+            exit 1
+          fi
+          echo "✅ All apt packages installed"
+
+      - name: Verify Node.js
+        run: |
+          node --version
+          npm --version
+          echo "✅ Node.js is available"
