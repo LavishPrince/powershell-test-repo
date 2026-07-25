@@ -102,7 +102,6 @@ brew_packages=(
     "superfile"
     "posting"
     "hashicorp/tap/terraform"
-    "infisical/get-cli/infisical"
     "harlequin"
     "pass"
 )
