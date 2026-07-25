@@ -119,7 +119,12 @@ foreach ($pkg in $packages) {
 
     Write-Host "📦 Installing $description ($name) ..." -ForegroundColor Yellow
     try {
-        choco install $name -y --limit-output $extraArgs
+        if ([string]::IsNullOrWhiteSpace($extraArgs)) {
+            choco install $name -y --limit-output
+        }
+        else {
+            choco install $name -y --limit-output $extraArgs
+        }
         Write-Host "✅ Installed $description" -ForegroundColor Green
     }
     catch {
@@ -156,32 +161,32 @@ if (Test-Path $alacrittySrcDir) {
     }
 
     # Copy themes directory (include gitignored submodules)
-    $themesSrc = Join-Path $alacrittySrcDir 'themes'
-    if (Test-Path $themesSrc) {
-        $themesDest = Join-Path $alacrittyDestDir 'themes'
-        if (Test-Path $themesDest) { Remove-Item $themesDest -Recurse -Force }
-        Copy-Item $themesSrc $themesDest -Recurse -Force
+    $alacrittyThemesSrc = Join-Path $alacrittySrcDir 'themes'
+    if (Test-Path $alacrittyThemesSrc) {
+        $alacrittyThemesDest = Join-Path $alacrittyDestDir 'themes'
+        if (Test-Path $alacrittyThemesDest) { Remove-Item $alacrittyThemesDest -Recurse -Force }
+        Copy-Item $alacrittyThemesSrc $alacrittyThemesDest -Recurse -Force
         Write-Host '   Copied themes'
     }
 
     # Copy config, rewriting the import path for Windows
-    $configSrc  = Join-Path $alacrittySrcDir 'alacritty.toml'
-    $configDest = Join-Path $alacrittyDestDir 'alacritty.toml'
+    $alacrittyConfigSrc  = Join-Path $alacrittySrcDir 'alacritty.toml'
+    $alacrittyConfigDest = Join-Path $alacrittyDestDir 'alacritty.toml'
 
-    $configContent = Get-Content $configSrc -Raw
+    $alacrittyConfigContent = Get-Content $alacrittyConfigSrc -Raw
     # Replace Unix-style ~/.config/alacritty import with a relative path
-    $configContent = $configContent -replace
+    $alacrittyConfigContent = $alacrittyConfigContent -replace
         '~/.config/alacritty/themes/',
         'themes/'
 
     # Backup existing config if present
-    if (Test-Path $configDest) {
-        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-        Copy-Item $configDest $backupPath
+    if (Test-Path $alacrittyConfigDest) {
+        $backupPath = "$alacrittyConfigDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $alacrittyConfigDest $backupPath
         Write-Host "   Backed up existing config to $backupPath"
     }
 
-    Set-Content -Path $configDest -Value $configContent -NoNewline
+    Set-Content -Path $alacrittyConfigDest -Value $alacrittyConfigContent -NoNewline
     Write-Host '✅ Alacritty config deployed' -ForegroundColor Green
 }
 else {
@@ -192,11 +197,11 @@ else {
 # Deploy GlazeWM config
 # ──────────────────────────────────────────────────
 
-$glazeWmDir  = Join-Path $env:USERPROFILE '.glaze-wm'
-$configSrc   = Join-Path $PSScriptRoot 'glazewm' 'config.yaml'
-$configDest  = Join-Path $glazeWmDir 'config.yaml'
+$glazeWmDir        = Join-Path $env:USERPROFILE '.glaze-wm'
+$glazeWmConfigSrc  = Join-Path $PSScriptRoot 'glazewm' 'config.yaml'
+$glazeWmConfigDest = Join-Path $glazeWmDir 'config.yaml'
 
-if (Test-Path $configSrc) {
+if (Test-Path $glazeWmConfigSrc) {
     Write-Host '⚙️  Deploying GlazeWM config ...' -ForegroundColor Yellow
 
     if (-not (Test-Path $glazeWmDir)) {
@@ -205,13 +210,13 @@ if (Test-Path $configSrc) {
     }
 
     # Backup existing config if present
-    if (Test-Path $configDest) {
-        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-        Copy-Item $configDest $backupPath
+    if (Test-Path $glazeWmConfigDest) {
+        $backupPath = "$glazeWmConfigDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $glazeWmConfigDest $backupPath
         Write-Host "   Backed up existing config to $backupPath"
     }
 
-    Copy-Item $configSrc $configDest -Force
+    Copy-Item $glazeWmConfigSrc $glazeWmConfigDest -Force
     Write-Host '✅ GlazeWM config deployed' -ForegroundColor Green
 }
 else {
@@ -222,11 +227,11 @@ else {
 # Deploy Zebar config
 # ──────────────────────────────────────────────────
 
-$zebarDir  = Join-Path $env:USERPROFILE '.glzr' 'zebar'
-$configSrc  = Join-Path $PSScriptRoot 'zebar' 'config.yaml'
-$configDest = Join-Path $zebarDir 'config.yaml'
+$zebarDir        = Join-Path $env:USERPROFILE '.glzr' 'zebar'
+$zebarConfigSrc  = Join-Path $PSScriptRoot 'zebar' 'config.yaml'
+$zebarConfigDest = Join-Path $zebarDir 'config.yaml'
 
-if (Test-Path $configSrc) {
+if (Test-Path $zebarConfigSrc) {
     Write-Host '⚙️  Deploying Zebar config ...' -ForegroundColor Yellow
 
     if (-not (Test-Path $zebarDir)) {
@@ -235,13 +240,13 @@ if (Test-Path $configSrc) {
     }
 
     # Backup existing config if present
-    if (Test-Path $configDest) {
-        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-        Copy-Item $configDest $backupPath
+    if (Test-Path $zebarConfigDest) {
+        $backupPath = "$zebarConfigDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $zebarConfigDest $backupPath
         Write-Host "   Backed up existing config to $backupPath"
     }
 
-    Copy-Item $configSrc $configDest -Force
+    Copy-Item $zebarConfigSrc $zebarConfigDest -Force
     Write-Host '✅ Zebar config deployed' -ForegroundColor Green
 }
 else {
@@ -315,13 +320,19 @@ if (Get-Command ssh-keygen -ErrorAction SilentlyContinue) {
         $usePassphrase = Read-Host '🔒 Enter a passphrase for your SSH key (or press Enter to skip)'
 
         try {
-            if ([string]::IsNullOrWhiteSpace($usePassphrase)) {
-                # Generate key without passphrase ('""' passes empty string to ssh-keygen)
-                ssh-keygen -t ed25519 -C "$env:USERNAME@github" -f $keyPath -N '""' 2>&1 | Out-Null
-            }
-            else {
-                ssh-keygen -t ed25519 -C "$env:USERNAME@github" -f $keyPath -N "$usePassphrase" 2>&1 | Out-Null
-            }
+            # Build argument list as an array so PowerShell's parameter binder
+            # passes an actual empty string through to ssh-keygen -N when the
+            # user skips the passphrase (a quoted '""' string literal would
+            # instead be interpreted by ssh-keygen as a two-character
+            # passphrase consisting of two double-quote characters).
+            $keygenArgs = @(
+                '-t', 'ed25519',
+                '-C', "$env:USERNAME@github",
+                '-f', $keyPath,
+                '-N', $usePassphrase
+            )
+
+            & ssh-keygen @keygenArgs 2>&1 | Out-Null
 
             if ($LASTEXITCODE -eq 0) {
                 Write-Host '✅ SSH key pair generated successfully' -ForegroundColor Green
