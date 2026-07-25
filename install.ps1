@@ -363,13 +363,28 @@ if (Get-Command ssh-keygen -ErrorAction SilentlyContinue) {
                 Write-Host '   ssh-agent service is already running'
             }
 
-            # Add the key to ssh-agent
-            ssh-add $keyPath 2>&1 | Out-Null
-            if ($LASTEXITCODE -eq 0) {
+            # Set SSH_AUTH_SOCK so ssh-add can talk to the agent.
+            # On Windows, OpenSSH uses a named pipe instead of a Unix socket.
+            if (-not $env:SSH_AUTH_SOCK) {
+                $env:SSH_AUTH_SOCK = '\\.\pipe\openssh-ssh-agent'
+            }
+
+            # Add the key to ssh-agent (with a timeout to avoid hanging)
+            $sshAddJob = Start-Job -ScriptBlock {
+                param($key)
+                ssh-add $key 2>&1
+            } -ArgumentList $keyPath
+
+            $sshAddJob | Wait-Job -Timeout 10 | Out-Null
+            $sshAddOutput = $sshAddJob | Receive-Job
+            $sshAddJob | Remove-Job -Force
+
+            if ($sshAddOutput -match 'Identity added') {
                 Write-Host '✅ SSH key added to ssh-agent' -ForegroundColor Green
             }
             else {
                 Write-Warning '⚠️  Could not add key to ssh-agent. You may need to add it manually: ssh-add ~/.ssh/id_ed25519'
+                if ($sshAddOutput) { Write-Host "   ssh-add output: $sshAddOutput" }
             }
         }
     }
