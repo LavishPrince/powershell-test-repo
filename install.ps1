@@ -1,16 +1,19 @@
 <#
     .SYNOPSIS
-    Installs Chocolatey (if missing), essential Windows tools, and deploys
-    the GlazeWM config.
+    Installs Chocolatey (if missing), essential Windows tools, JetBrains Mono
+    Nerd Font, and deploys the GlazeWM config.
 
     .DESCRIPTION
     This script ensures Chocolatey is present, then installs:
       - Zed (text editor)
       - GlazeWM (tiling window manager)
+      - Alacritty (terminal emulator)
       - Flow Launcher (app launcher)
+      - Zen Browser
 
-    After installation, it copies the bundled GlazeWM config.yaml to
-    ~/.glaze-wm/config.yaml (backing up any existing config first).
+    It also downloads and installs the JetBrains Mono Nerd Font for use with
+    Alacritty. After installation, it copies the bundled GlazeWM config.yaml
+    to ~/.glaze-wm/config.yaml (backing up any existing config first).
 
     .EXAMPLE
     .\install.ps1
@@ -96,7 +99,8 @@ $packages = @(
     @{ Name = 'zed'           ; Description = 'Zed text editor'               },
     @{ Name = 'glazewm'       ; Description = 'GlazeWM tiling window manager' },
     @{ Name = 'alacritty'     ; Description = 'Alacritty terminal emulator'    },
-    @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    }
+    @{ Name = 'flow-launcher' ; Description = 'Flow Launcher app launcher'    },
+    @{ Name = 'zen-browser'   ; Description = 'Zen Browser'                   }
 )
 
 foreach ($pkg in $packages) {
@@ -111,6 +115,67 @@ foreach ($pkg in $packages) {
     catch {
         Write-Error "❌ Failed to install $description ($name): $_"
     }
+}
+
+# ──────────────────────────────────────────────────
+# Install JetBrains Mono Nerd Font (for Alacritty)
+# ──────────────────────────────────────────────────
+
+Write-Host '🔤 Installing JetBrains Mono Nerd Font ...' -ForegroundColor Yellow
+
+try {
+    choco install nerd-fonts-JetBrainsMono -y --limit-output
+    Write-Host '✅ JetBrains Mono Nerd Font installed' -ForegroundColor Green
+}
+catch {
+    Write-Error "❌ Failed to install JetBrains Mono Nerd Font: $_"
+}
+
+# ──────────────────────────────────────────────────
+# Deploy Alacritty config (Windows)
+# ──────────────────────────────────────────────────
+
+$alacrittySrcDir  = Join-Path $PSScriptRoot 'home' '.config' 'alacritty'
+$alacrittyDestDir = Join-Path $env:APPDATA 'alacritty'
+
+if (Test-Path $alacrittySrcDir) {
+    Write-Host '⚙️  Deploying Alacritty config ...' -ForegroundColor Yellow
+
+    if (-not (Test-Path $alacrittyDestDir)) {
+        New-Item -ItemType Directory -Path $alacrittyDestDir -Force | Out-Null
+    }
+
+    # Copy themes directory (include gitignored submodules)
+    $themesSrc = Join-Path $alacrittySrcDir 'themes'
+    if (Test-Path $themesSrc) {
+        $themesDest = Join-Path $alacrittyDestDir 'themes'
+        if (Test-Path $themesDest) { Remove-Item $themesDest -Recurse -Force }
+        Copy-Item $themesSrc $themesDest -Recurse -Force
+        Write-Host '   Copied themes'
+    }
+
+    # Copy config, rewriting the import path for Windows
+    $configSrc  = Join-Path $alacrittySrcDir 'alacritty.toml'
+    $configDest = Join-Path $alacrittyDestDir 'alacritty.toml'
+
+    $configContent = Get-Content $configSrc -Raw
+    # Replace Unix-style ~/.config/alacritty import with a relative path
+    $configContent = $configContent -replace
+        '~/.config/alacritty/themes/',
+        'themes/'
+
+    # Backup existing config if present
+    if (Test-Path $configDest) {
+        $backupPath = "$configDest.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $configDest $backupPath
+        Write-Host "   Backed up existing config to $backupPath"
+    }
+
+    Set-Content -Path $configDest -Value $configContent -NoNewline
+    Write-Host '✅ Alacritty config deployed' -ForegroundColor Green
+}
+else {
+    Write-Warning 'home/.config/alacritty not found next to this script — skipping Alacritty config deploy'
 }
 
 # ──────────────────────────────────────────────────
