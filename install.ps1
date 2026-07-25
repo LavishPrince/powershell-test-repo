@@ -74,9 +74,22 @@ if (-not (Test-Chocolatey)) {
         [System.Net.ServicePointManager]::SecurityProtocol =
             [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-        $installScript = [System.Net.WebClient]::new().DownloadString(
-            'https://community.chocolatey.org/install.ps1'
-        )
+        # Use Invoke-RestMethod rather than WebClient: it surfaces HTTP/TLS
+        # failures as a proper terminating error with a useful message,
+        # instead of leaving $installScript unassigned and producing a
+        # confusing "variable has not been set" error under strict mode.
+        $installScript = $null
+        try {
+            $installScript = Invoke-RestMethod -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing
+        }
+        catch {
+            throw "Could not download the Chocolatey install script: $_"
+        }
+
+        if ([string]::IsNullOrWhiteSpace($installScript)) {
+            throw 'Downloaded Chocolatey install script was empty'
+        }
+
         Invoke-Expression $installScript
 
         # Refresh environment so choco is available in the current session
