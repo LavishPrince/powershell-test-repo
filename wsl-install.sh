@@ -118,7 +118,6 @@ echo "✅ Brew packages installed successfully!"
 # ──────────────────────────────────────────────────
 # Dotfiles
 # ──────────────────────────────────────────────────
-cd dotfiles
 
 git clone https://github.com/junegunn/fzf-git.sh.git "$HOME/fzf-git.sh"
 git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm/"
